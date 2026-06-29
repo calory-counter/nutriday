@@ -214,15 +214,14 @@ function searchCustomProducts(query) {
 }
 
 async function searchOpenFoodFacts(query) {
-  // Open Food Facts is the best browser-friendly source here: no secret key,
-  // CORS enabled, and Russian search works for many packaged products.
-  const url = new URL('https://world.openfoodfacts.org/cgi/search.pl');
-  url.searchParams.set('search_terms', query);
-  url.searchParams.set('search_simple', '1');
-  url.searchParams.set('action', 'process');
-  url.searchParams.set('json', '1');
+  // Full-text search via Open Food Facts "Search-a-licious" service.
+  // The legacy cgi/search.pl endpoint is deprecated and does NOT send the
+  // Access-Control-Allow-Origin header, so the browser blocks it on https
+  // origins (e.g. GitHub Pages). This endpoint is CORS-enabled.
+  const url = new URL('https://search.openfoodfacts.org/search');
+  url.searchParams.set('q', query);
   url.searchParams.set('page_size', '12');
-  url.searchParams.set('lc', 'ru');
+  url.searchParams.set('langs', 'ru');
   url.searchParams.set(
     'fields',
     [
@@ -235,17 +234,25 @@ async function searchOpenFoodFacts(query) {
     ].join(','),
   );
 
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`Open Food Facts error: ${response.status}`);
+  // Guard against a hanging request so the local fallback always renders.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(url.toString(), { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`Open Food Facts error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const products = Array.isArray(data.hits) ? data.hits : [];
+
+    return products
+      .map(normalizeOpenFoodFactsProduct)
+      .filter((item) => item.name && hasAtLeastOneNutrient(item));
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const data = await response.json();
-  const products = Array.isArray(data.products) ? data.products : [];
-
-  return products
-    .map(normalizeOpenFoodFactsProduct)
-    .filter((item) => item.name && hasAtLeastOneNutrient(item));
 }
 
 function normalizeOpenFoodFactsProduct(product) {
