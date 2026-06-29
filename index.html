@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NutriDay - счетчик калорий и БЖУ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">NutriDay</p>
+          <h1>Дневник калорий и нутриентов на русском языке</h1>
+          <p class="hero-copy">
+            Ищите продукты, считайте калории, БЖУ и клетчатку, добавляйте свои позиции и
+            храните дневной журнал локально в браузере.
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <button class="ghost-button" id="openCustomProductModal" type="button">
+            Добавить продукт
+          </button>
+          <div class="date-card">
+            <span>Сегодня</span>
+            <strong id="currentDateLabel">-</strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout-grid">
+        <section class="panel panel-search">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Поиск</p>
+              <h2>Найти продукт</h2>
+            </div>
+            <p class="panel-note">Источник: Open Food Facts + ваши продукты</p>
+          </div>
+
+          <form id="searchForm" class="search-form">
+            <label class="search-label" for="searchInput">Название продукта</label>
+            <div class="search-row">
+              <input
+                id="searchInput"
+                name="search"
+                type="search"
+                autocomplete="off"
+                placeholder="Например, гречка, творог, йогурт"
+              />
+              <button class="primary-button" type="submit">Искать</button>
+            </div>
+          </form>
+
+          <div class="status-line" id="searchStatus">
+            Введите запрос на русском языке, чтобы получить калории и БЖУ на 100 г.
+          </div>
+
+          <div id="searchResults" class="search-results" aria-live="polite"></div>
+
+          <section class="selection-card hidden" id="selectedProductCard">
+            <div class="selection-head">
+              <div>
+                <p class="section-kicker">Расчет порции</p>
+                <h3 id="selectedProductName">-</h3>
+                <p id="selectedProductMeta" class="muted-text">-</p>
+              </div>
+              <span class="source-pill" id="selectedSourceBadge">-</span>
+            </div>
+
+            <div class="nutrient-grid compact" id="selectedProductFacts"></div>
+
+            <form id="portionForm" class="portion-form">
+              <label for="gramsInput">Сколько съедено, г</label>
+              <div class="portion-row">
+                <input id="gramsInput" type="number" min="1" step="1" value="100" />
+                <button class="primary-button" type="submit">Добавить в дневник</button>
+              </div>
+            </form>
+
+            <div class="portion-summary hidden" id="portionSummary"></div>
+          </section>
+        </section>
+
+        <section class="panel panel-summary">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Итоги дня</p>
+              <h2>Сводка за сегодня</h2>
+            </div>
+            <button class="text-button" id="clearDayButton" type="button">
+              Очистить день
+            </button>
+          </div>
+
+          <div class="totals-grid" id="totalsGrid"></div>
+
+          <div class="macro-breakdown">
+            <div class="macro-head">
+              <h3>Распределение калорий по БЖУ</h3>
+              <span id="macroBreakdownLabel">-</span>
+            </div>
+            <div class="macro-bars" id="macroBars"></div>
+          </div>
+
+          <div class="diary-section">
+            <div class="diary-head">
+              <h3>Съеденные продукты</h3>
+              <span id="entriesCount">0 позиций</span>
+            </div>
+            <div id="diaryList" class="diary-list"></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-support">
+          <p class="footer-support-text">
+            Нравится NutriDay? Поддержите проект — это помогает развивать его дальше.
+          </p>
+          <div class="donate-buttons">
+            <a
+              class="donate-button"
+              href="https://ko-fi.com/nutriday"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span class="donate-emoji" aria-hidden="true">☕</span>
+              Поддержать на Ko-fi
+            </a>
+            <a
+              class="donate-button donate-button-yoomoney"
+              href="https://yoomoney.ru/to/4100119560857498"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span class="donate-emoji" aria-hidden="true">💜</span>
+              Поддержать через ЮMoney
+            </a>
+          </div>
+        </div>
+        <p class="footer-legal">
+          © 2026 NutriDay. Все права защищены. · All rights reserved.
+        </p>
+      </footer>
+    </div>
+
+    <div class="modal hidden" id="customProductModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+          <div>
+            <p class="section-kicker">Локальная база</p>
+            <h2 id="modalTitle">Добавить свой продукт</h2>
+          </div>
+          <button class="icon-button" id="closeModalButton" type="button" aria-label="Закрыть">
+            ×
+          </button>
+        </div>
+
+        <form id="customProductForm" class="modal-form">
+          <div class="field-grid">
+            <label>
+              <span>Название *</span>
+              <input name="name" type="text" required placeholder="Например, Домашняя гранола" />
+            </label>
+
+            <label>
+              <span>Бренд</span>
+              <input name="brand" type="text" placeholder="Опционально" />
+            </label>
+
+            <label>
+              <span>Калории на 100 г *</span>
+              <input name="calories" type="number" min="0" step="0.1" required />
+            </label>
+
+            <label>
+              <span>Белки на 100 г *</span>
+              <input name="protein" type="number" min="0" step="0.1" required />
+            </label>
+
+            <label>
+              <span>Жиры на 100 г *</span>
+              <input name="fat" type="number" min="0" step="0.1" required />
+            </label>
+
+            <label>
+              <span>Углеводы на 100 г *</span>
+              <input name="carbs" type="number" min="0" step="0.1" required />
+            </label>
+
+            <label>
+              <span>Клетчатка на 100 г</span>
+              <input name="fiber" type="number" min="0" step="0.1" placeholder="0" />
+            </label>
+          </div>
+
+          <div class="modal-actions">
+            <button class="ghost-button" type="button" id="cancelModalButton">Отмена</button>
+            <button class="primary-button" type="submit">Сохранить продукт</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <template id="resultCardTemplate">
+      <article class="result-card">
+        <div class="result-header">
+          <div>
+            <h3 class="result-title"></h3>
+            <p class="result-meta"></p>
+          </div>
+          <span class="source-pill result-source"></span>
+        </div>
+        <div class="nutrient-grid result-facts"></div>
+        <button class="secondary-button result-action" type="button">Выбрать</button>
+      </article>
+    </template>
+
+    <template id="diaryItemTemplate">
+      <article class="diary-item">
+        <div>
+          <div class="diary-item-top">
+            <h4 class="diary-item-title"></h4>
+            <span class="diary-item-grams"></span>
+          </div>
+          <p class="diary-item-meta"></p>
+          <p class="diary-item-facts"></p>
+        </div>
+        <button class="delete-button diary-item-delete" type="button">Удалить</button>
+      </article>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
